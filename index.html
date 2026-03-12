@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sqlchop — SQL Formatter &amp; Beautifier Online</title>
+  <meta name="description" content="Paste any SQL query and instantly get it formatted, indented, and readable. Supports PostgreSQL, MySQL, SQL Server, BigQuery, SQLite. All processing in your browser — nothing sent to a server.">
+  <meta name="keywords" content="sql formatter online, format sql query, sql beautifier, pretty print sql, sql formatter postgresql, sql formatter mysql, sql indenter, sql query formatter">
+  <meta property="og:title" content="sqlchop — SQL Formatter &amp; Beautifier Online">
+  <meta property="og:description" content="Paste any SQL query, pick your dialect, and get it beautifully formatted. Supports PostgreSQL, MySQL, SQL Server, BigQuery, SQLite. Browser-side only — nothing uploaded.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sqlchop.radicchio.page">
+  <meta property="og:image" content="https://sqlchop.radicchio.page/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://sqlchop.radicchio.page/og.png">
+  <meta name="twitter:title" content="sqlchop — SQL Formatter &amp; Beautifier">
+  <meta name="twitter:description" content="Paste SQL, pick dialect, get formatted output. Browser-side, nothing uploaded.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://sqlchop.radicchio.page">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "sqlchop",
+    "description": "Browser-side SQL formatter and beautifier. Paste any SQL query — SELECT, INSERT, UPDATE, CREATE TABLE, stored procedures — and instantly get it reformatted with proper indentation, consistent capitalization, and clean line breaks. Supports PostgreSQL, MySQL, SQL Server, BigQuery, and SQLite dialects. Nothing is uploaded to any server.",
+    "url": "https://sqlchop.radicchio.page",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "SQL formatting and beautification",
+      "Multiple dialect support: PostgreSQL, MySQL, SQL Server, BigQuery, SQLite",
+      "Configurable indent size (2 spaces, 4 spaces, tabs)",
+      "Uppercase or lowercase keyword normalization",
+      "Copy to clipboard",
+      "Download as .sql file",
+      "Offline capable — no server required"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is my SQL sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. sqlchop uses sql-formatter, a JavaScript library that runs entirely in your browser. Your SQL query is processed on your device and never transmitted anywhere. You can disconnect from the internet after the page loads — the tool still works."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which SQL dialects does sqlchop support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "sqlchop supports PostgreSQL, MySQL, SQL Server (T-SQL), BigQuery, and SQLite. Select the dialect from the dropdown before formatting to get dialect-specific keyword handling and function casing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why format SQL queries?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SQL queries copied from logs, ORMs, or BI tools often arrive as a single compressed line with no indentation. Formatted SQL is dramatically easier to read, debug, and share in code reviews. Consistent formatting also makes it easier to spot mistakes like missing WHERE clauses or incorrect JOIN conditions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can sqlchop format stored procedures?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. sqlchop handles CREATE PROCEDURE and complex multi-statement SQL blocks. For best results with T-SQL stored procedures, select the SQL Server dialect."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does uppercase keywords mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The 'Keywords' option controls whether SQL keywords like SELECT, FROM, WHERE, JOIN, and GROUP BY are uppercased or lowercased in the output. This is a style preference — both are valid SQL. Most style guides recommend uppercase keywords to distinguish them from table and column names."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I format a query from my ORM?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enable query logging in your ORM (e.g. RAILS_LOG_LEVEL=debug for Rails, SQL_LOG=true for Django), copy the logged query, paste it into sqlchop, select your database dialect, and click Format. The output will have clean indentation and readable line breaks."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #1a1714;
+      --surface: #221f1b;
+      --border: #2e2a25;
+      --text: #e0d8c8;
+      --muted: #8f8577;
+      --accent: #c8a84e;
+      --green: #5a9e6f;
+      --red: #b05050;
+      --yellow: #c8a84e;
+      --font: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Menlo', monospace;
+    }
+
+    html { font-size: 14px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--muted); font-weight: 400; }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-left: 8px;
+    }
+
+    main {
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px;
+      flex: 1;
+    }
+
+    h1 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a2a1a;
+      border: 1px solid #2a3a2a;
+      color: var(--green);
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 3px;
+      margin-bottom: 20px;
+    }
+
+    /* Options bar */
+    .options-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .opt-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .opt-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    select, .opt-toggle {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    select:focus, .opt-toggle:focus { border-color: var(--accent); }
+    select option { background: var(--bg); }
+
+    /* Split layout */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .pane-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    textarea, .output-pre {
+      width: 100%;
+      box-sizing: border-box;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.85rem;
+      padding: 12px;
+      border-radius: 4px;
+      resize: vertical;
+      outline: none;
+      line-height: 1.65;
+      tab-size: 2;
+    }
+
+    textarea {
+      height: 280px;
+      min-height: 120px;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+
+    textarea::placeholder { color: var(--muted); opacity: 0.6; }
+
+    .output-pre {
+      height: 280px;
+      min-height: 120px;
+      overflow: auto;
+      white-space: pre;
+      margin: 0;
+      position: relative;
+    }
+
+    .output-pre.empty { color: var(--muted); white-space: pre-wrap; }
+
+    /* Syntax highlight classes */
+    .kw  { color: #7eb8d4; } /* keywords */
+    .fn  { color: #d4a574; } /* functions */
+    .str { color: #8fc98f; } /* strings */
+    .num { color: #c8a84e; } /* numbers */
+    .cmt { color: #5a5248; } /* comments */
+    .pun { color: var(--muted); } /* punctuation */
+
+    /* Action row */
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+
+    .btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      padding: 7px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover { background: #d4b45a; border-color: #d4b45a; color: var(--bg); }
+
+    .btn-sm {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+    }
+
+    .status {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      margin-left: auto;
+    }
+
+    .status.ok   { color: var(--green); background: #1a2a1a; border: 1px solid #2a3a2a; }
+    .status.warn { color: var(--yellow); background: #2a2010; border: 1px solid #3a3015; }
+    .status.err  { color: var(--red); background: #2a1010; border: 1px solid #3a1a1a; }
+
+    /* About section */
+    .about {
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      margin-top: 8px;
+    }
+
+    .about h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .about p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+
+    .about code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-size: 0.82em;
+    }
+
+    /* FAQ */
+    details {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+    }
+
+    summary {
+      color: var(--text);
+      font-size: 0.88rem;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    summary::before {
+      content: '▸';
+      color: var(--muted);
+      font-size: 0.7em;
+      flex-shrink: 0;
+    }
+
+    details[open] summary::before { content: '▾'; }
+
+    details p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 10px 0 4px 18px;
+      line-height: 1.7;
+    }
+
+    /* Related */
+    .related {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .related h3 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .related-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .related-links a {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .related-links a:hover { border-color: var(--accent); color: var(--text); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .split { grid-template-columns: 1fr; }
+      .options-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+      header { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">sql<span>chop</span></div>
+  <span class="tagline">SQL formatter &amp; beautifier</span>
+</header>
+
+<main>
+  <h1>Format any SQL query</h1>
+  <p class="subtitle">Paste a compressed or messy SQL query — SELECT, INSERT, CREATE TABLE, stored procedures — and get clean, readable output instantly.</p>
+
+  <div class="privacy-badge">
+    <span>⬡</span> Browser-side only — nothing sent to a server
+  </div>
+
+  <div class="options-bar">
+    <div class="opt-group">
+      <span class="opt-label">Dialect</span>
+      <select id="dialect">
+        <option value="postgresql">PostgreSQL</option>
+        <option value="mysql">MySQL</option>
+        <option value="tsql">SQL Server (T-SQL)</option>
+        <option value="bigquery">BigQuery</option>
+        <option value="sqlite">SQLite</option>
+        <option value="plsql">PL/SQL (Oracle)</option>
+        <option value="spark">Spark SQL</option>
+        <option value="redshift">Redshift</option>
+        <option value="trino">Trino / Presto</option>
+        <option value="hive">Hive</option>
+      </select>
+    </div>
+    <div class="opt-group">
+      <span class="opt-label">Indent</span>
+      <select id="indent">
+        <option value="2">2 spaces</option>
+        <option value="4">4 spaces</option>
+        <option value="tab">tab</option>
+      </select>
+    </div>
+    <div class="opt-group">
+      <span class="opt-label">Keywords</span>
+      <select id="keycase">
+        <option value="upper">UPPERCASE</option>
+        <option value="lower">lowercase</option>
+        <option value="preserve">preserve</option>
+      </select>
+    </div>
+    <div class="opt-group">
+      <span class="opt-label">Line width</span>
+      <select id="linewidth">
+        <option value="80">80 chars</option>
+        <option value="100">100 chars</option>
+        <option value="120">120 chars</option>
+        <option value="0">no limit</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="split">
+    <div>
+      <div class="pane-label">Input — paste SQL here</div>
+      <textarea id="input" spellcheck="false" autocomplete="off" placeholder="SELECT u.id, u.email, COUNT(o.id) AS order_count FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE u.created_at > '2024-01-01' GROUP BY u.id, u.email ORDER BY order_count DESC LIMIT 50"></textarea>
+    </div>
+    <div>
+      <div class="pane-label">Output — formatted SQL</div>
+      <pre id="output" class="output-pre empty">Formatted output will appear here.</pre>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="formatSQL()">Format SQL</button>
+    <button class="btn" onclick="copyOutput()">Copy</button>
+    <button class="btn" onclick="downloadSQL()">Download .sql</button>
+    <button class="btn btn-sm" onclick="clearAll()">Clear</button>
+    <span id="status" class="status" style="display:none"></span>
+  </div>
+
+  <div class="about">
+    <h2>What is sqlchop?</h2>
+    <p>
+      sqlchop is a free, browser-side SQL formatter. Paste any SQL query — a SELECT with ten joins, a CREATE TABLE statement, a stored procedure, or a one-liner you copied from a log file — and sqlchop reformats it with consistent indentation, clean line breaks, and normalized keyword casing.
+    </p>
+    <p>
+      SQL queries arrive messy in the real world. ORM-generated SQL is often emitted as a single line. Database logs compress queries to save space. Code copied from Stack Overflow uses inconsistent spacing. sqlchop fixes all of this in under a second, entirely in your browser using the <code>sql-formatter</code> JavaScript library.
+    </p>
+    <p>
+      Choose your database dialect (PostgreSQL, MySQL, SQL Server, BigQuery, SQLite, or others) for accurate keyword handling. Configure indent size (2 spaces, 4 spaces, or tabs) and keyword casing (UPPERCASE or lowercase) to match your team's style guide. The formatted output can be copied to clipboard or downloaded as a <code>.sql</code> file.
+    </p>
+    <p>
+      Nothing is uploaded. Your SQL query is processed on your device and never leaves your browser. You can use sqlchop on a sensitive query — production credentials embedded in a connection string, proprietary schema names — without concern.
+    </p>
+
+    <h2 style="margin-top:24px">When to use a SQL formatter</h2>
+    <p>
+      The most common trigger is debugging. When a query runs slow or returns unexpected results, the first step is reading it clearly. A 400-character one-liner is impossible to reason about. Formatted over 40 lines, the missing <code>WHERE</code> clause or wrong <code>JOIN</code> condition jumps out immediately.
+    </p>
+    <p>
+      Code review is the second common trigger. Unformatted SQL in a pull request is a smell — it signals the author didn't read their own query carefully. Consistent formatting makes reviewing SQL as fast as reviewing application code.
+    </p>
+    <p>
+      The third trigger is BI tool exports. Tools like Tableau, Metabase, Looker, and dbt generate SQL that is technically correct but formatted for the machine, not the reader. sqlchop makes it reader-friendly instantly.
+    </p>
+
+    <h2 style="margin-top:24px">Frequently asked questions</h2>
+
+    <details>
+      <summary>Is my SQL sent to a server?</summary>
+      <p>No. sqlchop uses sql-formatter, a JavaScript library that runs entirely in your browser. Your SQL query is processed on your device and never transmitted anywhere. You can disconnect from the internet after the page loads — the tool still works.</p>
+    </details>
+
+    <details>
+      <summary>Which SQL dialects does sqlchop support?</summary>
+      <p>PostgreSQL, MySQL, SQL Server (T-SQL), BigQuery, SQLite, PL/SQL (Oracle), Spark SQL, Redshift, Trino/Presto, and Hive. Select the dialect from the dropdown before formatting to get dialect-specific keyword handling and function casing.</p>
+    </details>
+
+    <details>
+      <summary>Why format SQL queries?</summary>
+      <p>SQL queries copied from logs, ORMs, or BI tools often arrive as a single compressed line with no indentation. Formatted SQL is dramatically easier to read, debug, and share in code reviews. Consistent formatting also makes it easier to spot mistakes like missing WHERE clauses or incorrect JOIN conditions.</p>
+    </details>
+
+    <details>
+      <summary>Can sqlchop format stored procedures?</summary>
+      <p>Yes. sqlchop handles CREATE PROCEDURE and complex multi-statement SQL blocks. For best results with T-SQL stored procedures, select the SQL Server dialect.</p>
+    </details>
+
+    <details>
+      <summary>What does uppercase keywords mean?</summary>
+      <p>The Keywords option controls whether SQL keywords like SELECT, FROM, WHERE, JOIN, and GROUP BY are uppercased or lowercased in the output. This is a style preference — both are valid SQL. Most style guides recommend uppercase keywords to distinguish them from table and column names.</p>
+    </details>
+
+    <details>
+      <summary>How do I format a query from my ORM?</summary>
+      <p>Enable query logging in your ORM (e.g. <code>RAILS_LOG_LEVEL=debug</code> for Rails, <code>SQL_LOG=true</code> for Django, or <code>echo: true</code> in Sequelize), copy the logged query, paste it into sqlchop, select your database dialect, and click Format. The output will have clean indentation and readable line breaks.</p>
+    </details>
+
+    <details>
+      <summary>Does sqlchop modify my query logic?</summary>
+      <p>No. sqlchop is a formatter, not a query optimizer or rewriter. It adds whitespace and normalizes casing but does not change the query's meaning, add indexes, reorder clauses, or transform the SQL in any semantically significant way. What goes in is logically identical to what comes out.</p>
+    </details>
+
+    <details>
+      <summary>Can I use sqlchop as an API?</summary>
+      <p>sqlchop currently runs browser-side only. An MCP tool that exposes <code>format_sql(query, dialect)</code> is planned for the paid tier. If you need programmatic SQL formatting today, the <code>sql-formatter</code> npm package is the underlying library — install it directly in your project with <code>npm install sql-formatter</code>.</p>
+    </details>
+  </div>
+
+  <div class="related">
+    <h3>More tools from the -chop family</h3>
+    <div class="related-links">
+      <a href="https://csvchop.radicchio.page">csvchop — CSV to JSON</a>
+      <a href="https://yamlchop.radicchio.page">yamlchop — YAML validator</a>
+      <a href="https://jwtchop.radicchio.page">jwtchop — JWT decoder</a>
+      <a href="https://b64chop.radicchio.page">b64chop — Base64 encoder</a>
+      <a href="https://epochop.radicchio.page">epochop — Unix timestamp</a>
+      <a href="https://hashchop.radicchio.page">hashchop — SHA hash generator</a>
+      <a href="https://uuidchop.radicchio.page">uuidchop — UUID generator</a>
+      <a href="https://qrnch.radicchio.page">qrnch — QR code generator</a>
+      <a href="https://envlint.com">envlint — .env validator</a>
+      <a href="https://cronfig.radicchio.page">cronfig — cron expression tester</a>
+      <a href="https://feedlint.radicchio.page">feedlint — RSS/Atom validator</a>
+      <a href="https://difflint.radicchio.page">difflint — git diff linter</a>
+      <a href="https://linkscrub.radicchio.page">linkscrub — URL cleaner</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="https://bitterdesk.com/s/sqlchop/">Support</a>
+  <span>sqlchop — built by an independent developer</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sql-formatter@15/dist/sql-formatter.min.js"></script>
+<script>
+  let lastFormatted = '';
+
+  function getOptions() {
+    const dialect = document.getElementById('dialect').value;
+    const indentVal = document.getElementById('indent').value;
+    const keycase = document.getElementById('keycase').value;
+    const linewidth = parseInt(document.getElementById('linewidth').value, 10);
+
+    const tabWidth = indentVal === 'tab' ? 1 : parseInt(indentVal, 10);
+    const useTabs = indentVal === 'tab';
+
+    return {
+      language: dialect,
+      tabWidth,
+      useTabs,
+      keywordCase: keycase,
+      linesBetweenQueries: 2,
+      expressionWidth: linewidth === 0 ? 9999 : linewidth
+    };
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status ' + type;
+    el.style.display = 'inline-flex';
+    if (type === 'ok') setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  function formatSQL() {
+    const input = document.getElementById('input').value.trim();
+    const output = document.getElementById('output');
+
+    if (!input) {
+      output.textContent = 'Paste a SQL query in the input panel.';
+      output.className = 'output-pre empty';
+      setStatus('No input', 'warn');
+      return;
+    }
+
+    try {
+      const opts = getOptions();
+      const formatted = sqlFormatter.format(input, opts);
+      lastFormatted = formatted;
+      output.textContent = formatted;
+      output.className = 'output-pre';
+      setStatus('Formatted', 'ok');
+    } catch (e) {
+      output.textContent = 'Could not format — check syntax: ' + e.message;
+      output.className = 'output-pre empty';
+      setStatus('Format error', 'err');
+    }
+  }
+
+  function copyOutput() {
+    const text = document.getElementById('output').textContent;
+    if (!text || document.getElementById('output').classList.contains('empty')) {
+      setStatus('Nothing to copy', 'warn');
+      return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+      setStatus('Copied!', 'ok');
+    }).catch(() => {
+      setStatus('Copy failed', 'err');
+    });
+  }
+
+  function downloadSQL() {
+    const text = document.getElementById('output').textContent;
+    if (!text || document.getElementById('output').classList.contains('empty')) {
+      setStatus('Nothing to download', 'warn');
+      return;
+    }
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'query.sql';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setStatus('Downloaded', 'ok');
+  }
+
+  function clearAll() {
+    document.getElementById('input').value = '';
+    const output = document.getElementById('output');
+    output.textContent = 'Formatted output will appear here.';
+    output.className = 'output-pre empty';
+    document.getElementById('status').style.display = 'none';
+    lastFormatted = '';
+  }
+
+  // Format on Ctrl+Enter / Cmd+Enter
+  document.getElementById('input').addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      formatSQL();
+    }
+  });
+
+  // Auto-format on paste if input already has content
+  document.getElementById('input').addEventListener('paste', function() {
+    setTimeout(() => {
+      if (document.getElementById('input').value.trim().length > 10) {
+        formatSQL();
+      }
+    }, 50);
+  });
+</script>
+
+</body>
+</html>
