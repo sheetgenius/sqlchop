@@ -62,7 +62,7 @@
         "name": "Which SQL dialects does sqlchop support?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "sqlchop supports PostgreSQL, MySQL, SQL Server (T-SQL), BigQuery, and SQLite. Select the dialect from the dropdown before formatting to get dialect-specific keyword handling and function casing."
+          "text": "sqlchop supports PostgreSQL, MySQL, SQL Server (T-SQL), BigQuery, SQLite, PL/SQL (Oracle), Spark SQL, Redshift, Trino/Presto, and Hive. Select the dialect from the dropdown before formatting to get dialect-specific keyword handling and function casing."
         }
       },
       {
@@ -95,6 +95,22 @@
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Enable query logging in your ORM (e.g. RAILS_LOG_LEVEL=debug for Rails, SQL_LOG=true for Django), copy the logged query, paste it into sqlchop, select your database dialect, and click Format. The output will have clean indentation and readable line breaks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does sqlchop modify my query logic?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. sqlchop is a formatter, not a query optimizer or rewriter. It adds whitespace and normalizes casing but does not change the query's meaning, add indexes, reorder clauses, or transform the SQL in any semantically significant way. What goes in is logically identical to what comes out."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use sqlchop as an API?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "sqlchop currently runs browser-side only. An MCP tool that exposes format_sql(query, dialect) is planned for the paid tier. If you need programmatic SQL formatting today, the sql-formatter npm package is the underlying library — install it directly in your project with npm install sql-formatter."
         }
       }
     ]
