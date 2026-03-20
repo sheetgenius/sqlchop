@@ -1,0 +1,13 @@
+{
+  "api_base": "https://radicchio.fly.dev",
+  "files": [
+    "index.html",
+    "og.png",
+    "og.svg",
+    "robots.txt",
+    "sitemap.xml"
+  ],
+  "hostname": "sqlchop.radicchio.page",
+  "site_id": 37,
+  "site_name": "sqlchop"
+}
